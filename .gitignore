@@ -37,5 +37,6 @@ config.yaml
 *.bean
 
 
+开发文档.md
 从零搭建BeanBot教学文档.md
 CLAUDE.md

@@ -1,5 +1,5 @@
 from __future__ import annotations
-import re
+from os import curdir
 import subprocess
 from datetime import datetime
 from decimal import Decimal
@@ -9,6 +9,7 @@ from beancount.parser.printer import EntryPrinter
 from pathlib import Path
 
 from beancount import loader
+from beancount.core.amount import Amount
 from beancount.core import data as d
 
 
@@ -45,6 +46,55 @@ class BeancountRepository:
             # dcontext 是显示上下文，控制小数位数等格式
             self._printer = EntryPrinter(dcontext=self._options.get("dcontext"))
         return self._printer(entry)
+
+    def build_transaction_entry(
+        self,
+        date: datetime,
+        payee: str,
+        narration: str,
+        account: str,
+        amount: Decimal,
+        tags: set[str] | None = None,
+    ):
+        # 创建一个新的元数据容器, <generated>对应filename参数，告诉系统这条数据是被生成的，并不存在于实际的物理账本目录中
+        meta = d.new_metadata("<generated>", 0)
+
+        postings = [
+            d.Posting(
+                account=account,
+                units=Amount(amount, self.currency),
+                cost=None,
+                price=None,
+                flag=None,
+                meta=None,
+            ),
+            d.Posting(
+                account="<TODO Add TO Account>",
+                units=Amount(-amount, self.currency),
+                cost=None,
+                price=None,
+                flag=None,
+                meta=None,
+            ),
+        ]
+        return d.Transaction(
+            meta=meta,
+            date=date.date(),
+            flag="*",
+            payee=payee,
+            narration=narration,
+            tags=frozenset(tags) if tags else frozenset(),
+            links=frozenset(),
+            postings=postings,
+        )
+
+    def append_transaction(self, entry) -> None:
+        formatted = self.render_entry(entry)
+
+        with open(self.filename, "a", encoding="utf-8") as f:
+            f.write("\n")
+            f.write(formatted)
+            f.write("\n")
 
     """根据账户片段查找完整账户名。
     Args:
