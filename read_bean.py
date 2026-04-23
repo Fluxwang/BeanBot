@@ -9,7 +9,7 @@ entries, errors, options = loader.load_file("my_ledger.bean")
 #     print(type(entry).__name__)
 #     print(printer(entry))
 
-print(options)
+print(entries)
 
 # if errors:
 #     print("解析错误")
