@@ -7,6 +7,7 @@ import subprocess
 from beancount.core.number import MISSING
 from beancount.parser.printer import EntryPrinter
 from beancount.parser import parser
+from beanquery.query import run_query
 from beancount import loader
 from beancount.core.amount import Amount
 from beancount.core import data as d
@@ -197,6 +198,63 @@ class BeancountRepository:
         """
         return parser.parse_string(text)
 
+    def run_query(self, query: str):
+        """查询交易
+        调用 beanquery.query.run_query 执行 BQL 查询交易
+
+        Returns:
+            返回查询结果
+        """
+        return run_query(self.entries, self.options, query)
+
+    def clone_transaction(self, text: str, amount: Decimal | None = None) -> str:
+        """根据模板交易文本克隆一条新交易，可选的金额
+        Args:
+            text: 模板交易文本，包括日期、payee、postings
+            等完整交易信息
+
+            amount: 可选, 如果传入则替换第一条非 MISSING 的
+            posting 金额，也就是覆盖模板交易文本的 amount 部分
+
+        Returns:
+            渲染后的交易文本字符串
+
+        """
+
+        entries, _, _ = self.parse_transactions(text)
+        try:
+            # next() 的作用为 让这个迭代器开始执行，取第一个值出来
+            transaction = next(
+                entry for entry in entries if isinstance(entry, d.Transaction)
+            )
+        except StopIteration as exc:
+            raise NO_TRANSACTION_ERROR from exc
+
+        if amount is not None:
+            # 使用 enumerate 进行编号遍历-- 一边遍历一边给每个元素贴个序号
+            for index, posting in enumerate(transaction.postings):
+                if posting.units is not MISSING:
+                    transaction.postings[index] = d.Posting(
+                        account=posting.account,
+                        units=Amount(Decimal(-amount), self.currency),
+                        meta=posting.meta,
+                        cost=posting.cost,
+                        price=posting.price,
+                        flag=posting.flag,
+                    )
+                    break
+        transaction = d.Transaction(
+            date=datetime.now().astimezone().date(),
+            flag=transaction.flag,
+            payee=transaction.payee,
+            narration=transaction.narration,
+            meta=transaction.meta,
+            postings=transaction.postings,
+            tags=transaction.tags,
+            links=transaction.links,
+        )
+        return self.render_entry(transaction)
+
     def append_transaction(self, data: str):
         """追加交易到账本文件。
 
@@ -216,8 +274,9 @@ class BeancountRepository:
 
         # 格式化文件
         subprocess.run(
-            ["bean-format", "-o", self.filename, self.filename],
+            ["bean-format", "-o", str(self.filename), str(self.filename)],
             check=True,
+            shell=False,
         )
         # 重新加载
         self._load()
