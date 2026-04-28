@@ -142,13 +142,13 @@ class BeancountRepository:
 
     def build_transaction_entry(
         self,
-        date: datetime | None,
         payee: str,
         narration: str,
         from_account: str,
         to_account: str,
         amount: Decimal,
         tags: set[str] | None = None,
+        date: datetime | None = None,
     ) -> d.Transaction:
         # 创建一个新的元数据容器, <generated>对应filename参数，告诉系统这条数据是被生成的，并不存在于实际的物理账本目录中
         meta = d.new_metadata("<generated>", 0)
