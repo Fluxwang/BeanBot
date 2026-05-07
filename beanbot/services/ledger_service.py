@@ -1,8 +1,4 @@
-import contextlib
-from datetime import datetime
 from decimal import Decimal
-
-import requests
 
 from beanbot.gateways.beancount_repo import NO_TRANSACTION_ERROR
 from beanbot.i18n import gettext as _
