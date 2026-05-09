@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-
 from beanbot.gateways.beancount_repo import BeancountRepository
 from beanbot.bots.controller import BotController, configure as configure_controller
 from beanbot.services.ledger_service import LedgerService

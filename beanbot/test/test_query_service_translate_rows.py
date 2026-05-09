@@ -1,9 +1,6 @@
-from beanbot.models import Table
 from beanbot.services.query_service import QueryService
 from beanbot.gateways.beancount_repo import BeancountRepository
-from dataclasses import asdict
 import logging
-import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

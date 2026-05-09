@@ -1,7 +1,5 @@
 from decimal import Decimal
 
-from beanbot import settings
-from beanbot.gateways.beancount_repo import NO_TRANSACTION_ERROR
 from beanbot.i18n import gettext as _
 from beanbot.services.parser import parse_args
 
