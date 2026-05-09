@@ -152,15 +152,12 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
         return
 
     if query.data.startswith("submit:"):
-        # index = int(query.data.split(":")[1])
         if not isinstance(query.message, Message) or query.message.text is None:
             return
-        # print(query.message.text_markdown_v2)
         transaction = query.message.text_markdown_v2.split("```beancount\n")[1].split(
             "```"
         )[0]
         transaction = transaction.replace("\\-", "-").replace("\\*", "*")
-        # print(transaction)
         result = controller.get_controller().submit_transaction(transaction)
         if isinstance(result, ErrorMessage):
             await query.edit_message_text(text=result.content)
@@ -186,7 +183,6 @@ async def clone_transaction(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text="Not a transaction message")
         return
     transaction = text.split("```beancount\n")[1].split("```")[0]
-    print(transaction)
     result = controller.get_controller().clone_txs(transaction, amount)
     if isinstance(result, ErrorMessage):
         await update.message.reply_text(text=result.content)

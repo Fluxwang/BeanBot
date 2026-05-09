@@ -35,6 +35,7 @@ Thumbs.db
 # Local project data
 config.yaml
 *.bean
+read_bean.py
 
 test.py
 
