@@ -76,7 +76,7 @@ class BeancountRepository:
         Returns: Assets:Bank:Checking
         """
         if range_ is None:
-            range_ = [2, 3]
+            range_ = [2, 4]
 
         candidates = []
         for account in self.accounts:

@@ -6,15 +6,15 @@ from beanbot.models import Table
 class QueryService:
     """
     - result_types: 每一列的元信息，比如列名、类型
+    eg:(beanquery.Column('account', str), beanquery.Column('sum(position)', inventory))
+
     - result_rows: 真正的数据行
-    Table(
-          title="Expenses",
-          headers=["account", "sum_position"],
-          rows=[
-              ["Expenses:Food", "100.00 CNY"],
-              ["Expenses:Transport", "20.00 CNY"],
-          ],
-      )
+    eg:[
+      ('Expenses:Food', (250.00 CNY)),
+      ('Expenses:Transport', (12.00 CNY)),
+      ('Expenses:Coffee', (32.00 CNY)),
+      ('Expenses:Shopping', (299.00 CNY))
+      ]
     """
 
     def __init__(self, repository):
@@ -25,9 +25,9 @@ class QueryService:
         headers = [column.name for column in result_types]
         rows = []
         for row in result_rows:
-            row_data = []
-            for value in row:
-                row_data.append(str(value))
+            row_data = [str(value) for value in row]
+            if any(cell in ("", "()") for cell in row_data):
+                continue
             rows.append(row_data)
         return Table(title=title, headers=headers, rows=rows)
 
@@ -39,6 +39,6 @@ class QueryService:
         return self.translate_rows("Expenses", result_types, result_rows)
 
     def fetch_bill(self) -> Table:
-        query = "SELECT account, sum(position) WHERE account ~'Liabilities' GROUP BY account"
+        query = "SELECT account, sum(position) WHERE account ~'Liabilities' or account ~'Assets' GROUP BY account"
         result_types, result_rows = self.repository.run_query(query)
         return self.translate_rows("Bills", result_types, result_rows)

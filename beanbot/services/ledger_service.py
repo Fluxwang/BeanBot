@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from beanbot import settings
 from beanbot.gateways.beancount_repo import NO_TRANSACTION_ERROR
 from beanbot.i18n import gettext as _
 from beanbot.services.parser import parse_args
@@ -33,8 +34,12 @@ class LedgerService:
         amount, from_acc, to_acc, *extra = args
 
         amount = Decimal(amount)
-        from_account = self.repository.find_account(from_acc)
-        to_account = self.repository.find_account(to_acc)
+        from_account = self.repository.find_account(
+            from_acc, self.settings.beancount.account_distinguation_range
+        )
+        to_account = self.repository.find_account(
+            to_acc, self.settings.beancount.account_distinguation_range
+        )
         payee = None
 
         if from_account is None:
