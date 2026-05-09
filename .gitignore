@@ -36,6 +36,7 @@ Thumbs.db
 config.yaml
 *.bean
 
+test.py
 
 开发文档.md
 从零搭建BeanBot教学文档.md

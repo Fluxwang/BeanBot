@@ -4,11 +4,9 @@ import time
 from datetime import datetime, timedelta
 
 import telegram
-from fava.util.date import parse_date
 from telegram import Message, Update
 
 from telegram.ext import (
-    Application,
     ApplicationBuilder,
     CallbackQueryHandler,
     CommandHandler,
@@ -19,7 +17,8 @@ from telegram.ext import (
 
 from beanbot.bootstrap import get_context
 from beanbot.bots import controller
-from beanbot.i18n import gettext as _
+
+# from beanbot.i18n import gettext as _
 from beanbot.models import ErrorMessage
 
 # 获取系统时间
@@ -117,8 +116,7 @@ async def expense(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def render(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message is None:
         return
-    # 只获取命令后面的参数列表
-    line = " ".join(context.args) if context.args else ""
+    line = update.message.text
     result = controller.get_controller().render_txs(line)
     if isinstance(result, ErrorMessage):
         await update.message.reply_text(text=result.content)
@@ -154,11 +152,15 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
         return
 
     if query.data.startswith("submit:"):
-        index = int(query.data.split(":")[1])
+        # index = int(query.data.split(":")[1])
         if not isinstance(query.message, Message) or query.message.text is None:
             return
-        transaction = query.message.text.split("```beancount\n")[1].split("\n```")[0]
+        # print(query.message.text_markdown_v2)
+        transaction = query.message.text_markdown_v2.split("```beancount\n")[1].split(
+            "```"
+        )[0]
         transaction = transaction.replace("\\-", "-").replace("\\*", "*")
+        # print(transaction)
         result = controller.get_controller().submit_transaction(transaction)
         if isinstance(result, ErrorMessage):
             await query.edit_message_text(text=result.content)
@@ -178,16 +180,16 @@ async def clone_transaction(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text="Please reply to a transaction message")
         return
 
-    text = reply_to.text
+    # reply_to.text 返回的是渲染后的纯文本
+    text = reply_to.text_markdown_v2
     if "```beancount" not in text:
         await update.message.reply_text(text="Not a transaction message")
         return
-    transaction = text.split("```beancount\n")[1].split("\n```")[0]
-    transaction = transaction.replace("\\-", "-").replace("\\*", "*")
-
+    transaction = text.split("```beancount\n")[1].split("```")[0]
+    print(transaction)
     result = controller.get_controller().clone_txs(transaction, amount)
     if isinstance(result, ErrorMessage):
-        update.message.reply_text(text=result.content)
+        await update.message.reply_text(text=result.content)
         return
 
     for index, cloned in enumerate(result):
@@ -212,6 +214,11 @@ def run_bot(settings, logger):
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("bill", bill))
     app.add_handler(CommandHandler("expense", expense))
-    app.add_handler(CommandHandler("render", render))
+    # app.add_handler(CommandHandler("render", render))
+    app.add_handler(CommandHandler("clone", clone_transaction))
+    # filters.TEXT: 匹配所有包含文字内容的消息, filters.COMMAND: 匹配以 / 开头的指令消息 ~为取反的意思
+    # ~filters.COMMAND 就是不是指令的消息
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, render))
+    app.add_handler(CallbackQueryHandler(callback_query_handler))
     logger.info("Starting telegram Bot")
     app.run_polling()
