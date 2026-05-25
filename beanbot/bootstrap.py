@@ -10,6 +10,8 @@ from beanbot.logging_config import init_logging
 from beanbot.services.ledger_service import LedgerService
 from beanbot.services.query_service import QueryService
 from beanbot.settings import Settings, load_settings
+from beanbot.gateways.vector_store import create_vector_store
+from beanbot.gateways.embedding_client import EmbeddingClient
 
 
 @dataclass
@@ -43,6 +45,12 @@ def bootstrap_app(config_path: str) -> AppContext:
         currency=str(settings.beancount.currency),
         logger=logger,
     )
+    if settings.embedding.get("enable", False):
+        embedding_client = EmbeddingClient(settings)
+        vector_store = create_vector_store(settings)
+    else:
+        embedding_client = None
+        vector_store = None
 
     # 初始化 ledger_service
     ledger_service = LedgerService(
