@@ -103,6 +103,19 @@ class SqliteVectorStore:
     def query(
         self, embeding: list[float], sentence: str, candidate_amount: int
     ) -> list[dict]:
+        """根据输入向量查找最相似的历史交易
+        Args:
+            embedding: 查询语句的 embedding 向量
+            sentence: 原始自然语言查询语句，用于计算 score
+            candidate_amount: 从向量库中取多少条候选结果
+
+        Returns:
+            按score 从高到低排序的交易列表，每条包含id, occurance, sentence, content, distance, score
+
+        Example:
+            input: ([0.1, 0.2, 0.3,...], "肯德基 午餐", 3)
+            Returns: [{"sentence": "肯德基 午饭 CMB Food", "score":0.95, ...}]
+        """
         db = self.get_db()
         try:
             # vec_distance_cosine(a,b)计算a和b向量之间的余弦距离，范围为[0, 2]，越接近0越相似

@@ -3,6 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from beanbot.models import BaseMessage, ErrorMessage
+from beanbot.services import vector_service
 
 _controller = None
 
@@ -16,6 +17,11 @@ def get_controller():
 def configure(controller):
     global _controller
     _controller = controller
+
+
+# 函数级包装函数
+def build_db():
+    return get_controller().build_db()
 
 
 class BotController:
@@ -112,6 +118,8 @@ class BotController:
         try:
             if not self.settings.embedding.get("enable", True):
                 return BaseMessage(content="embedding not enabled")
-            return BaseMessage(content="Vecter DB built (placeholder)")
+            tokens = self.vector_service.build_transaction_db(self.repository.entries)
+            # return BaseMessage(content=("Token usage: {tokens}").format(tokens=tokens))
+            return BaseMessage(content=f"Token usage: {tokens}")
         except Exception as e:
             return ErrorMessage(content=str(e), exception=e)
