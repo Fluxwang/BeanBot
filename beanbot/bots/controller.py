@@ -3,7 +3,6 @@ from __future__ import annotations
 from decimal import Decimal
 
 from beanbot.models import BaseMessage, ErrorMessage
-from beanbot.services import vector_service
 
 _controller = None
 
@@ -116,7 +115,7 @@ class BotController:
     def build_db(self):
         """构建向量数据库"""
         try:
-            if not self.settings.embedding.get("enable", True):
+            if not self.settings.embedding.get("enable", False):
                 return BaseMessage(content="embedding not enabled")
             tokens = self.vector_service.build_transaction_db(self.repository.entries)
             # return BaseMessage(content=("Token usage: {tokens}").format(tokens=tokens))

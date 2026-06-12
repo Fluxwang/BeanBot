@@ -1,8 +1,7 @@
 from __future__ import annotations
-from typing import Any
+from decimal import Decimal, InvalidOperation
 from beancount.core.compare import hash_entry
 
-# from beancount.core.data import Transaction
 from beancount.core import data as d
 from beanbot.services.parser import parse_args
 
@@ -16,7 +15,17 @@ class VectorService:
         self.logger = logger
 
     def convert_account(self, account: str) -> str:
-        """分割账户名，去配置指定范围的段"""
+        """分割账户名，去配置指定范围的段
+        dist_range 既可以是 int 也可以是 序列([start, end])
+
+        Args:
+            account: 类似于 Expenses:Food:Lunch 或 Assets:DebitCard:HKD:ZA-1234
+
+        Returns:
+            segments 为 空列表时(切片越界导致结果为空): 返回你输入的原始 account
+            segments 不为 空列表时: 返回根据你的 account_distinguation_range 的长度拆分的str
+
+        """
         dist_range = self.settings.beancount.account_distinguation_range
         segments = account.split(":")
         if isinstance(dist_range, int):
@@ -36,7 +45,14 @@ class VectorService:
         return value.replace('"', '\\"')
 
     def convert_to_natural_language(self, transaction) -> str:
-        """调用escape_quotes将交易条目进行转义"""
+        """将一个 transaction 转换成一句自然语言描述(payee + narration + accounts + tags)
+        Args:
+            transaction: 传入的是beancount.core.data.Transaction 的 namedtuple 的实例
+            具有.payee .narration .postings .tags 等字段属性可以直接访问
+
+        Returns:
+            "星巴克 冰美式 Assets:HKD:ZA-123 Expenses:Drink"
+        """
         payee = f"{self.escape_quotes(transaction.payee)}"
         narration = f"{self.escape_quotes(transaction.narration)}"
         accounts = " ".join(
@@ -45,7 +61,7 @@ class VectorService:
         sentence = f"{payee} {narration} {accounts}"
         if transaction.tags:
             tags = " ".join(["#" + tag for tag in transaction.tags])
-            sentence += f"{tags}"
+            sentence += f" {tags}"
         return sentence
 
     def build_transaction_db(self, transactions) -> int:
@@ -65,8 +81,7 @@ class VectorService:
         for entry in reversed(transactions):
             if not isinstance(entry, d.Transaction):
                 continue
-            # sentence 已经通过 escape_quotes 函数完成转义
-            # sentence 的构成为{payee} {description} {account}
+            # sentence 已经通过 escape_quotes 函数完成自然语言转换
             sentence = self.convert_to_natural_language(entry)
             if sentence in unique_transactions:
                 # 如果 sentence 已经在 unique_transactions 中存在直接 occurance + 1
@@ -150,7 +165,12 @@ class VectorService:
         return candidate_args
 
     def complete_with_rag(self, args: list[str], date: str, accounts: list[str]) -> str:
-        stripped_input = " ".join(args[1:])
+        try:
+            Decimal(args[0])
+            stripped_input = " ".join(args[1:])
+        except InvalidOperation:
+            stripped_input = " ".join(args[0:])
+
         candidates = self.settings.embedding.candidates or 3
         embeddings, _ = self.embedding_client.embed([stripped_input])
         matches = self.vector_store.query(

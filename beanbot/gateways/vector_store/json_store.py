@@ -46,6 +46,6 @@ class JsonVectorStore:
         transactions.sort(key=itemgetter("distance"), reverse=True)
         # 只获取 candidates 个数据
         candidates = transactions[:candidate_amount]
-        candidates.sort(key=lambda item: item["distance"])
+        candidates.sort(key=lambda item: item["score"], reverse=True)
         return candidates
         # return embed_query

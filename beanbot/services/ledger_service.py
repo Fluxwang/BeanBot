@@ -78,7 +78,7 @@ class LedgerService:
             # 先尝试直接生成交易
             return [self.build_transaction(args)]
         except ValueError as original_error:
-            vec_enabled = self.settings.embedding.get("enable", True)
+            vec_enabled = self.settings.embedding.get("enable", False)
             rag_enabled = self.settings.rag.get("enable", False)
             if rag_enabled:
                 today = str(datetime.now().astimezone().date())

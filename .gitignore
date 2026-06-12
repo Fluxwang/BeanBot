@@ -49,3 +49,5 @@ examplePrint/
 Beancount
 read_bean.py
 tx_db.sqlite
+beanbot/test/*
+

@@ -165,8 +165,8 @@ class BeancountRepository:
     ) -> d.Transaction:
         """构建交易条目
         Args:
-            from_account: 根据账户
-            to_account: 流入账户
+            from_account: 这笔金额是从哪个账户流出的
+            to_account: 这笔金额流入哪个账户
             tags: 不传为空集合，date 不传用今天
         Returns:
             d.Transaction
@@ -184,8 +184,9 @@ class BeancountRepository:
             ),
             d.Posting(
                 account=to_account,
-                units=Amount(-amount, self.currency),
+                # units=Amount(-amount, self.currency),
                 # units=MISSING,
+                units=None,
                 cost=None,
                 price=None,
                 flag=None,

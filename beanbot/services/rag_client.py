@@ -1,7 +1,6 @@
 import json
 
 import requests
-import http.client
 
 from beanbot.gateways.embedding_client import TIMEOUT
 
