@@ -280,6 +280,38 @@ class BeancountRepository:
         )
         return self.render_entry(transaction)
 
+    def delete_transactions(self, ids: list[str]):
+        """根据 id 列表删除账目。id 格式为 'filename:lineno'（1-based 行号）。"""
+        from collections import defaultdict
+
+        file_linenos: dict[str, set[int]] = defaultdict(set)
+        for id_ in ids:
+            filename, lineno_str = id_.rsplit(":", 1)
+            file_linenos[filename].add(int(lineno_str))
+
+        for filename, linenos in file_linenos.items():
+            path = Path(filename)
+            lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+
+            # 找出每个 transaction 块的所有行（从 lineno 到下一个空行前）
+            to_delete: set[int] = set()
+            for lineno in linenos:
+                i = lineno - 1  # 转为 0-based
+                while i < len(lines) and lines[i].strip():
+                    to_delete.add(i)
+                    i += 1
+
+            new_lines = [line for idx, line in enumerate(lines) if idx not in to_delete]
+            path.write_text("".join(new_lines), encoding="utf-8")
+
+            subprocess.run(
+                ["bean-format", "-o", str(path), str(path)],
+                check=True,
+                shell=False,
+            )
+
+        self._load()
+
     def append_transaction(self, data: str):
         """追加交易到账本文件。
 

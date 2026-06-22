@@ -22,6 +22,13 @@ export const post = (path, body) =>
     body: JSON.stringify(body),
   }).then(handle);
 
+export const del = (path, body) =>
+  fetch(path, {
+    method: 'DELETE',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+  }).then(handle);
+
 export const login = (username, password) =>
   fetch('/api/auth/login', {
     method: 'POST',

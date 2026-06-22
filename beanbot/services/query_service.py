@@ -39,15 +39,38 @@ class QueryService:
         result_types, result_rows = self.repository.run_query(query)
         return self.translate_rows("Expenses", result_types, result_rows)
 
-    def fetch_transactions(self) -> Table:
-        query = (
-            "SELECT date, payee, narration, account, position "
-            "WHERE account ~ '^Expenses' OR account ~ '^Income' "
-            "ORDER BY date DESC "
-            "LIMIT 50"
-        )
-        result_types, result_rows = self.repository.run_query(query)
-        return self.translate_rows("Transactions", result_types, result_rows)
+    def fetch_transactions(self) -> list[dict]:
+        from beancount.core import data as d
+
+        entries = sorted(
+            [e for e in self.repository.entries if isinstance(e, d.Transaction)],
+            key=lambda e: e.date,
+            reverse=True,
+        )[:50]
+
+        rows = []
+        for entry in entries:
+            for posting in entry.postings:
+                if not (
+                    posting.account.startswith("Expenses:")
+                    or posting.account.startswith("Income:")
+                ):
+                    continue
+                if posting.units is None:
+                    continue
+                filename = entry.meta.get("filename", "")
+                lineno = entry.meta.get("lineno", 0)
+                rows.append(
+                    {
+                        "date": str(entry.date),
+                        "payee": entry.payee or "",
+                        "narration": entry.narration or "",
+                        "account": posting.account,
+                        "position": str(posting.units),
+                        "id": f"{filename}:{lineno}",
+                    }
+                )
+        return rows
 
     def fetch_bill(self) -> Table:
         query = "SELECT account, sum(position) WHERE account ~'Liabilities' or account ~'Assets' GROUP BY account"
