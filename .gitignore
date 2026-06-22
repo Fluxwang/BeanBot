@@ -51,3 +51,5 @@ read_bean.py
 tx_db.sqlite
 beanbot/test/*
 
+.env
+ui/

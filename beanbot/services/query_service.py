@@ -38,6 +38,16 @@ class QueryService:
         result_types, result_rows = self.repository.run_query(query)
         return self.translate_rows("Expenses", result_types, result_rows)
 
+    def fetch_transactions(self) -> Table:
+        query = (
+            "SELECT date, payee, narration, account, position "
+            "WHERE account ~ 'Expenses' OR account ~ 'Income' "
+            "ORDER BY date DESC "
+            "LIMIT 50"
+        )
+        result_types, result_rows = self.repository.run_query(query)
+        return self.translate_rows("Transactions", result_types, result_rows)
+
     def fetch_bill(self) -> Table:
         query = "SELECT account, sum(position) WHERE account ~'Liabilities' or account ~'Assets' GROUP BY account"
         result_types, result_rows = self.repository.run_query(query)
