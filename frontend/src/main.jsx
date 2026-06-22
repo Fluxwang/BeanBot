@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Ledger from './pages/Ledger';
 import Entry from './pages/Entry';
 import Assets from './pages/Assets';
+import Stats from './pages/Stats';
 import './index.css';
 
 function RequireAuth({ children }) {
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/" element={<RequireAuth><Ledger /></RequireAuth>} />
           <Route path="/entry" element={<RequireAuth><Entry /></RequireAuth>} />
           <Route path="/assets" element={<RequireAuth><Assets /></RequireAuth>} />
+          <Route path="/stats" element={<RequireAuth><Stats /></RequireAuth>} />
         </Routes>
       </BrowserRouter>
     </AccountsProvider>

@@ -89,16 +89,23 @@ function TabBar({ navigate }) {
         <span style={{ fontSize: 28, color: '#000', lineHeight: 1, marginTop: -2 }}>+</span>
       </button>
 
-      {[{ id: 'savings', label: '存钱' }, { id: 'stats', label: '统计' }].map(item => (
-        <button key={item.id} style={{
-          border: 0, background: 'transparent', padding: '6px 14px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-          color: 'rgba(255,255,255,0.4)',
-        }}>
-          <span style={{ fontSize: 20 }}>◎</span>
-          <span style={{ fontSize: 10.5, fontWeight: 500 }}>{item.label}</span>
-        </button>
-      ))}
+      <button style={{
+        border: 0, background: 'transparent', padding: '6px 14px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+        color: 'rgba(255,255,255,0.4)',
+      }}>
+        <span style={{ fontSize: 20 }}>◎</span>
+        <span style={{ fontSize: 10.5, fontWeight: 500 }}>存钱</span>
+      </button>
+
+      <button onClick={() => navigate('/stats')} style={{
+        border: 0, background: 'transparent', padding: '6px 14px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+        color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
+      }}>
+        <span style={{ fontSize: 20 }}>◉</span>
+        <span style={{ fontSize: 10.5, fontWeight: 500 }}>统计</span>
+      </button>
     </div>
   );
 }

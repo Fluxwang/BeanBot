@@ -23,12 +23,14 @@ def create_app():
     from api.routes.entry import entry_bp
     from api.routes.ledger import ledger_bp
     from api.routes.assets import assets_bp
+    from api.routes.stats import stats_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(accounts_bp, url_prefix="/api")
     app.register_blueprint(entry_bp, url_prefix="/api")
     app.register_blueprint(ledger_bp, url_prefix="/api")
     app.register_blueprint(assets_bp, url_prefix="/api")
+    app.register_blueprint(stats_bp, url_prefix="/api")
 
     return app
 
