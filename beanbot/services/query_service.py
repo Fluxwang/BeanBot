@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from beancount.core import data as d
 from beanbot.models import Table
 
 
@@ -40,8 +41,6 @@ class QueryService:
         return self.translate_rows("Expenses", result_types, result_rows)
 
     def fetch_transactions(self) -> list[dict]:
-        from beancount.core import data as d
-
         entries = sorted(
             [e for e in self.repository.entries if isinstance(e, d.Transaction)],
             key=lambda e: e.date,

@@ -13,7 +13,7 @@ def _amount_to_float(units, currency: str) -> float:
     if units is None:
         return 0.0
     if hasattr(units, 'currency') and units.currency != currency:
-        return 0.0
+        return 0.0  # 只统计主货币，忽略外币持仓
     return float(units.number)
 
 

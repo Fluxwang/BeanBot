@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../api';
+import { login, get } from '../api';
 import { useAccounts } from '../context/AccountsContext';
-import { get } from '../api';
+import { ACCENT } from '../components';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -63,7 +63,7 @@ export default function Login() {
 
         <button type="submit" disabled={loading} style={{
           marginTop: 8, height: 50, border: 0, borderRadius: 14,
-          background: loading ? 'rgba(255,255,255,0.1)' : '#c8a96e',
+          background: loading ? 'rgba(255,255,255,0.1)' : ACCENT,
           color: loading ? 'rgba(255,255,255,0.3)' : '#0a0a0a',
           fontSize: 16, fontWeight: 600, cursor: loading ? 'default' : 'pointer',
           fontFamily: 'inherit', transition: 'background 0.15s',

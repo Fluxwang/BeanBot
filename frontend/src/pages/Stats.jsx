@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { get } from '../api';
-
-function hashColor(str) {
-  const palette = ['#e9876a','#69a7e8','#7dd87d','#caa46a','#b07de8','#e87d9a','#7dc8e8','#e8c87d'];
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xfffffff;
-  return palette[h % palette.length];
-}
+import { TabBar, hashColor } from '../components';
 
 function fmt(v) {
   return '¥' + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -175,57 +168,6 @@ function CatRow({ cat, total, expanded, onToggle }) {
   );
 }
 
-// ── TabBar ────────────────────────────────────────────────────
-function TabBar({ navigate }) {
-  return (
-    <div style={{
-      paddingTop: 8, paddingBottom: 28, background: 'rgba(0,0,0,0.85)',
-      backdropFilter: 'blur(20px)', borderTop: '0.5px solid rgba(255,255,255,0.08)',
-      display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', flexShrink: 0,
-    }}>
-      {[{ id: 'ledger', label: '账本', path: '/' }, { id: 'assets', label: '资产', path: '/assets' }].map(item => (
-        <button key={item.id} onClick={() => navigate(item.path)} style={{
-          border: 0, background: 'transparent', padding: '6px 14px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-          color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
-        }}>
-          <span style={{ fontSize: 20 }}>{item.id === 'ledger' ? '☰' : '◈'}</span>
-          <span style={{ fontSize: 10.5, fontWeight: 500 }}>{item.label}</span>
-        </button>
-      ))}
-
-      <button onClick={() => navigate('/entry')} style={{
-        width: 56, height: 56, borderRadius: '50%', background: '#c8a96e', border: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        marginTop: -22, marginBottom: 4, cursor: 'pointer',
-        boxShadow: '0 4px 16px #c8a96e55, 0 2px 6px rgba(0,0,0,0.3)',
-      }}>
-        <span style={{ fontSize: 28, color: '#000', lineHeight: 1, marginTop: -2 }}>+</span>
-      </button>
-
-      {[{ id: 'savings', label: '存钱', path: null }].map(item => (
-        <button key={item.id} style={{
-          border: 0, background: 'transparent', padding: '6px 14px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-          color: 'rgba(255,255,255,0.4)',
-        }}>
-          <span style={{ fontSize: 20 }}>◎</span>
-          <span style={{ fontSize: 10.5, fontWeight: 500 }}>{item.label}</span>
-        </button>
-      ))}
-
-      <button style={{
-        border: 0, background: 'transparent', padding: '6px 14px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-        color: '#f5f5f5', cursor: 'pointer',
-      }}>
-        <span style={{ fontSize: 20 }}>◉</span>
-        <span style={{ fontSize: 10.5, fontWeight: 600 }}>统计</span>
-      </button>
-    </div>
-  );
-}
-
 // ── 主页面 ────────────────────────────────────────────────────
 const RANGES = [
   { value: 'week', label: '周' },
@@ -242,8 +184,6 @@ export default function Stats() {
   const [tab, setTab] = useState('expense');
   const [expanded, setExpanded] = useState(null);
   const [activeSlice, setActiveSlice] = useState(null);
-  const navigate = useNavigate();
-
   useEffect(() => {
     setData(null);
     get(`/api/stats?range=${range}`).then(res => { if (res) setData(res); });
@@ -338,7 +278,7 @@ export default function Stats() {
         )}
       </div>
 
-      <TabBar navigate={navigate}/>
+      <TabBar active="stats" />
     </div>
   );
 }

@@ -1,18 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { del, get } from '../api';
-
-function hashColor(str) {
-  const palette = ['#e9876a','#69a7e8','#7dd87d','#caa46a','#b07de8','#e87d9a','#7dc8e8','#e8c87d'];
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xfffffff;
-  return palette[h % palette.length];
-}
-
-function accountLabel(account) {
-  const parts = account.split(':');
-  return parts[parts.length - 1];
-}
+import { TabBar, LetterIcon, accountLabel, ACCENT } from '../components';
 
 function parseAmount(position) {
   const m = position.match(/-?([\d.]+)/);
@@ -23,19 +11,6 @@ function isIncome(account) {
   return account.startsWith('Income:');
 }
 
-function LetterIcon({ account }) {
-  const label = accountLabel(account);
-  const color = hashColor(account);
-  return (
-    <div style={{
-      width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-      background: color + '28',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <span style={{ fontSize: 15, fontWeight: 700, color }}>{label[0]?.toUpperCase()}</span>
-    </div>
-  );
-}
 
 function UndoToast({ count, onUndo, onExpire }) {
   const [progress, setProgress] = useState(100);
@@ -67,7 +42,7 @@ function UndoToast({ count, onUndo, onExpire }) {
           已删除 {count > 1 ? `${count} 条` : ''}账目
         </span>
         <button onClick={onUndo} style={{
-          border: 0, background: 'transparent', color: '#c8a96e',
+          border: 0, background: 'transparent', color: ACCENT,
           fontSize: 13.5, fontWeight: 600, cursor: 'pointer', padding: '2px 4px',
         }}>
           撤销
@@ -75,7 +50,7 @@ function UndoToast({ count, onUndo, onExpire }) {
       </div>
       <div style={{ height: 2, background: 'rgba(255,255,255,0.08)' }}>
         <div style={{
-          height: '100%', background: '#c8a96e',
+          height: '100%', background: ACCENT,
           width: `${progress}%`, transition: 'width 0.05s linear',
         }} />
       </div>
@@ -312,58 +287,6 @@ function MonthSummary({ rows }) {
   );
 }
 
-function TabBar({ navigate }) {
-  return (
-    <div style={{
-      paddingTop: 8, paddingBottom: 28,
-      background: 'rgba(0,0,0,0.85)',
-      backdropFilter: 'blur(20px)',
-      borderTop: '0.5px solid rgba(255,255,255,0.08)',
-      display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
-      flexShrink: 0,
-    }}>
-      {[
-        { id: 'ledger', label: '账本', active: true, path: '/' },
-        { id: 'assets', label: '资产', active: false, path: '/assets' },
-      ].map(item => (
-        <button key={item.id} onClick={() => navigate(item.path)} style={{
-          border: 0, background: 'transparent', padding: '6px 14px',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-          color: item.active ? '#f5f5f5' : 'rgba(255,255,255,0.4)',
-        }}>
-          <span style={{ fontSize: 20 }}>{item.id === 'ledger' ? '☰' : '◈'}</span>
-          <span style={{ fontSize: 10.5, fontWeight: item.active ? 600 : 500 }}>{item.label}</span>
-        </button>
-      ))}
-      <button onClick={() => navigate('/entry')} style={{
-        width: 56, height: 56, borderRadius: '50%',
-        background: '#c8a96e', border: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        marginTop: -22, marginBottom: 4,
-        boxShadow: '0 4px 16px #c8a96e55, 0 2px 6px rgba(0,0,0,0.3)',
-      }}>
-        <span style={{ fontSize: 28, color: '#000', lineHeight: 1, marginTop: -2 }}>+</span>
-      </button>
-      <button style={{
-        border: 0, background: 'transparent', padding: '6px 14px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-        color: 'rgba(255,255,255,0.4)',
-      }}>
-        <span style={{ fontSize: 20 }}>◎</span>
-        <span style={{ fontSize: 10.5, fontWeight: 500 }}>存钱</span>
-      </button>
-      <button onClick={() => navigate('/stats')} style={{
-        border: 0, background: 'transparent', padding: '6px 14px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-        color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
-      }}>
-        <span style={{ fontSize: 20 }}>◉</span>
-        <span style={{ fontSize: 10.5, fontWeight: 500 }}>统计</span>
-      </button>
-    </div>
-  );
-}
-
 export default function Ledger() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -371,7 +294,6 @@ export default function Ledger() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [undoItems, setUndoItems] = useState(null);
   const undoTimerRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     get('/api/ledger/transactions').then(data => {
@@ -448,7 +370,7 @@ export default function Ledger() {
         <button
           onClick={() => { setEditing(e => !e); setSelectedIds(new Set()); }}
           style={{
-            border: 0, background: 'transparent', color: editing ? '#c8a96e' : 'rgba(255,255,255,0.5)',
+            border: 0, background: 'transparent', color: editing ? ACCENT : 'rgba(255,255,255,0.5)',
             fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '6px 2px',
           }}
         >
@@ -505,7 +427,7 @@ export default function Ledger() {
         />
       )}
 
-      <TabBar navigate={navigate} />
+      <TabBar active="ledger" />
     </div>
   );
 }
