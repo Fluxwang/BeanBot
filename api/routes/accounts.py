@@ -8,7 +8,10 @@ account_bp = Blueprint("accounts", __name__)
 
 def _label(account_name: str) -> str:
     # 获取account_name
-    return account_name.split(":")[-1]
+    label = account_name.split(":")[-1]
+    if label == "CN":
+        label = account_name.split(":")[-2]
+    return label
 
 
 @account_bp.route("/accounts", methods=["GET"])
